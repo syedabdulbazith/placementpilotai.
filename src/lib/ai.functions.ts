@@ -24,7 +24,7 @@ const fallbackResumeAnalysis = {
   score: 0,
   strengths: [] as string[],
   weaknesses: [] as string[],
-  suggestions: ["We could not complete the AI analysis right now. Please try again in a moment."],
+  suggestions: [] as string[],
 };
 
 function extractJson(raw: string) {
