@@ -14,8 +14,8 @@ function gw() {
 
 /* ---------- RESUME ANALYZER ---------- */
 const ResumeSchema = z.object({
-  overall_score: z.number().min(0).max(100),
-  ats_score: z.number().min(0).max(100),
+  overall_score: z.number(),
+  ats_score: z.number(),
   summary: z.string(),
   detected_skills: z.array(z.string()),
   strengths: z.array(z.string()),
