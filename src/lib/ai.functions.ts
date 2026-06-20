@@ -71,7 +71,7 @@ ${data.text.slice(0, 12000)}
 
 /* ---------- SKILL GAP ---------- */
 const SkillGapSchema = z.object({
-  match_percent: z.number().min(0).max(100),
+  match_percent: z.number(),
   matched_skills: z.array(z.string()),
   missing_skills: z.array(
     z.object({ skill: z.string(), priority: z.enum(["high", "medium", "low"]), reason: z.string() }),
