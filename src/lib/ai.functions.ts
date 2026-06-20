@@ -25,7 +25,7 @@ const ResumeSchema = z.object({
 
 export const analyzeResume = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ fileName: z.string(), text: z.string().min(20) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -83,7 +83,7 @@ const SkillGapSchema = z.object({
 
 export const analyzeSkillGap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({ targetRole: z.string().min(2), currentSkills: z.array(z.string()) })
       .parse(d),
@@ -132,7 +132,7 @@ const EligibilitySchema = z.object({
 
 export const checkEligibility = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         cgpa: z.number().min(0).max(10),
@@ -180,7 +180,7 @@ const InterviewSchema = z.object({
 
 export const generateInterviewQuestions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         type: z.enum(["technical", "hr", "aptitude", "mock"]),
@@ -220,7 +220,7 @@ const EvalSchema = z.object({
 
 export const evaluateAnswer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z.object({ question: z.string(), answer: z.string(), idealAnswer: z.string().optional() }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -253,7 +253,7 @@ const RoadmapSchema = z.object({
 
 export const generateRoadmap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         goal: z.string().min(2),
@@ -291,7 +291,7 @@ Build a day-by-day plan covering DSA, system design (if relevant), aptitude, com
 /* ---------- CHAT (non-streaming, simple) ---------- */
 export const chatAssistant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
+  .validator((d: unknown) =>
     z
       .object({
         threadId: z.string().uuid(),
