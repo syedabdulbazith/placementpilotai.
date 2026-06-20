@@ -70,13 +70,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "AI-powered placement preparation for college students. Resume analysis, skill gap detection, company eligibility, mock interviews, and personalized roadmaps.",
       },
-      { property: "og:title", content: "PlacementPilot AI" },
+      { property: "og:title", content: "PlacementPilot AI — Your Personal AI Placement Officer" },
       {
         property: "og:description",
         content: "Your Personal AI Placement Officer — land your dream job.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "PlacementPilot AI — Your Personal AI Placement Officer" },
+      { name: "description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
+      { property: "og:description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
+      { name: "twitter:description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/04f04fc0-dc89-432e-b37e-5b02eda77afc/id-preview-445406d7--d71dbe79-9753-4231-9ee1-56820382a0e7.lovable.app-1781947545618.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/04f04fc0-dc89-432e-b37e-5b02eda77afc/id-preview-445406d7--d71dbe79-9753-4231-9ee1-56820382a0e7.lovable.app-1781947545618.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
