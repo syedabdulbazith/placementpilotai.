@@ -13,15 +13,49 @@ function gw() {
 }
 
 /* ---------- RESUME ANALYZER ---------- */
-const ResumeSchema = z.object({
-  overall_score: z.number(),
-  ats_score: z.number(),
-  summary: z.string(),
-  detected_skills: z.array(z.string()),
+const ResumeAnalysisSchema = z.object({
+  score: z.coerce.number().catch(0),
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
   suggestions: z.array(z.string()),
 });
+
+const fallbackResumeAnalysis = {
+  score: 0,
+  strengths: [] as string[],
+  weaknesses: [] as string[],
+  suggestions: ["We could not complete the AI analysis right now. Please try again in a moment."],
+};
+
+function extractJson(raw: string) {
+  let cleaned = raw
+    .replace(/^```json\s*/im, "")
+    .replace(/^```\s*/im, "")
+    .replace(/```\s*$/im, "")
+    .trim();
+
+  if (!cleaned.startsWith("{") && !cleaned.startsWith("[")) {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start === -1 || end <= start) throw new Error("No valid JSON object found");
+    cleaned = cleaned.slice(start, end + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+function normalizeResumeAnalysis(raw: unknown) {
+  const parsed = ResumeAnalysisSchema.safeParse(raw);
+  if (!parsed.success) throw new Error("AI response did not match the expected resume schema");
+
+  const score = Math.max(0, Math.min(100, Math.round(parsed.data.score)));
+  return {
+    score,
+    strengths: parsed.data.strengths,
+    weaknesses: parsed.data.weaknesses,
+    suggestions: parsed.data.suggestions,
+  };
+}
 
 export const analyzeResume = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -29,41 +63,63 @@ export const analyzeResume = createServerFn({ method: "POST" })
     z.object({ fileName: z.string(), text: z.string().min(20) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: ResumeSchema }),
-      system:
-        "You are an expert technical recruiter and ATS resume analyzer. Be strict but constructive. Detect technical skills, projects, and experience accurately.",
-      prompt: `Analyze this resume and produce a structured JSON evaluation.
+    let analysis = fallbackResumeAnalysis;
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You are an expert technical recruiter and ATS resume analyzer. Return only raw JSON. Do not include markdown, comments, extra keys, or prose.",
+        prompt: `Analyze this resume and return exactly this JSON shape with no extra keys:
+{
+  "score": 0,
+  "strengths": [],
+  "weaknesses": [],
+  "suggestions": []
+}
+
+Rules:
+- score must be a raw number from 0 to 100, with no percent sign and no separators.
+- strengths, weaknesses, and suggestions must be arrays of concise strings.
+- Return valid JSON only.
 
 Resume text:
 """
 ${data.text.slice(0, 12000)}
 """`,
-    });
+      });
+
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      analysis = normalizeResumeAnalysis(extractJson(text));
+    } catch (error) {
+      console.error("Resume AI analysis failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("resume_analyses")
       .insert({
         user_id: context.userId,
         file_name: data.fileName,
-        overall_score: output.overall_score,
-        ats_score: output.ats_score,
-        strengths: output.strengths,
-        weaknesses: output.weaknesses,
-        suggestions: output.suggestions,
-        detected_skills: output.detected_skills,
-        summary: output.summary,
+        overall_score: analysis.score,
+        ats_score: analysis.score,
+        strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses,
+        suggestions: analysis.suggestions,
+        detected_skills: [],
+        summary:
+          analysis.score === 0
+            ? "The AI analysis could not be completed safely, so we saved a fallback result instead of crashing."
+            : "AI resume analysis completed successfully.",
         raw_text: data.text.slice(0, 20000),
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error("We couldn't save the analysis. Please try again.");
 
     // Update readiness score (rolling avg with resume)
     await context.supabase
       .from("profiles")
-      .update({ readiness_score: Math.round((output.overall_score + output.ats_score) / 2) })
+      .update({ readiness_score: analysis.score })
       .eq("id", context.userId);
 
     return row;
