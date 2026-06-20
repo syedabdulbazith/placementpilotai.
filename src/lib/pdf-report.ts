@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+import type { jsPDF as JsPDF } from "jspdf";
 
 type ResumeAnalysis = {
   file_name?: string | null;
@@ -14,7 +14,7 @@ type ResumeAnalysis = {
 const INDIGO = "#4f46e5";
 const PURPLE = "#a78bfa";
 
-function header(doc: jsPDF, title: string) {
+function header(doc: JsPDF, title: string) {
   doc.setFillColor(INDIGO);
   doc.rect(0, 0, 210, 28, "F");
   doc.setTextColor("#ffffff");
@@ -27,7 +27,7 @@ function header(doc: jsPDF, title: string) {
   doc.setTextColor("#111827");
 }
 
-function section(doc: jsPDF, y: number, title: string, items: string[] | string) {
+function section(doc: JsPDF, y: number, title: string, items: string[] | string) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(INDIGO);
@@ -49,7 +49,8 @@ function section(doc: jsPDF, y: number, title: string, items: string[] | string)
   return cursor + 4;
 }
 
-export function downloadResumeReport(a: ResumeAnalysis) {
+export async function downloadResumeReport(a: ResumeAnalysis) {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF();
   header(doc, "Resume Analysis Report");
 
@@ -93,7 +94,8 @@ type Roadmap = {
   plan?: { overview?: string; days?: Array<{ day: number; theme: string; tasks: string[]; resources: string[]; time_hours: number }> } | null;
 };
 
-export function downloadRoadmapReport(r: Roadmap) {
+export async function downloadRoadmapReport(r: Roadmap) {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF();
   header(doc, `${r.duration_days ?? ""}-Day Preparation Roadmap`);
 
