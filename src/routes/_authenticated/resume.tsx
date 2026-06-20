@@ -36,12 +36,16 @@ function ResumePage() {
 
   const m = useMutation({
     mutationFn: async () => analyzeFn({ data: { fileName, text } }),
-    onSuccess: () => {
-      toast.success("Resume analyzed!");
+    onSuccess: (result) => {
+      if (result.summary?.includes("could not be completed")) {
+        toast.warning("AI analysis could not be completed. A safe fallback result was saved.");
+      } else {
+        toast.success("Resume analyzed!");
+      }
       qc.invalidateQueries({ queryKey: ["resumes"] });
       qc.invalidateQueries({ queryKey: ["profile"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: () => toast.error("We couldn't analyze your resume right now. Please try again."),
   });
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
