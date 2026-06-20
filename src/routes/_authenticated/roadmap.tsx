@@ -76,7 +76,7 @@ function RoadmapPage() {
                 <h3 className="font-display text-xl font-bold">{active.goal}</h3>
                 <p className="text-sm text-muted-foreground">{active.duration_days}-day plan · {progress}% complete</p>
               </div>
-              <Button variant="glass" onClick={() => downloadRoadmapReport(active)}><Download className="h-4 w-4" />Download PDF</Button>
+              <Button variant="glass" onClick={() => downloadRoadmapReport(active as unknown as Parameters<typeof downloadRoadmapReport>[0])}><Download className="h-4 w-4" />Download PDF</Button>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary"><div className="bg-gradient-primary h-full transition-all" style={{ width: `${progress}%` }} /></div>
             {(active.plan as { overview?: string } | null)?.overview && (

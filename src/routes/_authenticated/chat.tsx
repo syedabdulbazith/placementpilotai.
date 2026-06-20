@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/chat")({
   component: ChatPage,
 });
 
-type Thread = { id: string; title: string; updated_at: string };
+type Thread = { id: string; title: string | null; updated_at: string };
 type Msg = { id: string; role: string; content: string; created_at: string };
 
 function ChatPage() {
