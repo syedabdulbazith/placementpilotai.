@@ -122,7 +122,7 @@ const EligibilitySchema = z.object({
       name: z.string(),
       role: z.string(),
       package_lpa: z.string(),
-      eligibility_percent: z.number().min(0).max(100),
+      eligibility_percent: z.number(),
       matched: z.array(z.string()),
       gaps: z.array(z.string()),
       action: z.string(),
@@ -135,7 +135,7 @@ export const checkEligibility = createServerFn({ method: "POST" })
   .validator((d: unknown) =>
     z
       .object({
-        cgpa: z.number().min(0).max(10),
+        cgpa: z.number(),
         department: z.string(),
         skills: z.array(z.string()),
       })
@@ -185,7 +185,7 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
       .object({
         type: z.enum(["technical", "hr", "aptitude", "mock"]),
         role: z.string().default("Software Engineer"),
-        count: z.number().min(3).max(15).default(8),
+        count: z.number().default(8),
       })
       .parse(d),
   )
@@ -213,7 +213,7 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
 
 /* ---------- EVALUATE MOCK INTERVIEW ANSWER ---------- */
 const EvalSchema = z.object({
-  score: z.number().min(0).max(10),
+  score: z.number(),
   feedback: z.string(),
   improvements: z.array(z.string()),
 });
