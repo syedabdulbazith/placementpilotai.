@@ -64,20 +64,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PlacementPilot AI — Your Personal AI Placement Officer" },
+      { title: "PlacementPilot AI — Navigate Your Career with AI" },
       {
         name: "description",
         content:
           "AI-powered placement preparation for college students. Resume analysis, skill gap detection, company eligibility, mock interviews, and personalized roadmaps.",
       },
-      { property: "og:title", content: "PlacementPilot AI — Your Personal AI Placement Officer" },
+      { property: "og:title", content: "PlacementPilot AI — Navigate Your Career with AI" },
       {
         property: "og:description",
         content: "Your Personal AI Placement Officer — land your dream job.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "PlacementPilot AI — Your Personal AI Placement Officer" },
+      { name: "twitter:title", content: "PlacementPilot AI — Navigate Your Career with AI" },
       { name: "description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
       { property: "og:description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
       { name: "twitter:description", content: "PlacementPilot AI is a web application that helps college students prepare for job placements." },
