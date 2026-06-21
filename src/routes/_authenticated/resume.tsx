@@ -53,11 +53,16 @@ function ResumePage() {
     const f = e.target.files?.[0];
     if (!f) return;
     setFileName(f.name);
-    if (f.type === "text/plain" || f.name.endsWith(".txt")) {
-      setText(await f.text());
-    } else {
-      toast.info("For PDF/DOCX, paste extracted text below. We support direct text for now.");
+    const toastId = toast.loading("Reading your resume…");
+    const result = await extractResumeText(f);
+    toast.dismiss(toastId);
+    if (!result.ok) {
+      setText("");
+      toast.error(result.error);
+      return;
     }
+    setText(result.text);
+    toast.success("Resume loaded. Click Analyze with AI.");
   }
 
   return (
