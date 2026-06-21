@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, Sparkles, CheckCircle2, AlertCircle, Lightbulb, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadResumeReport } from "@/lib/pdf-report";
+import { extractResumeText } from "@/lib/resume-extract";
 
 export const Route = createFileRoute("/_authenticated/resume")({
   head: () => ({ meta: [{ title: "Resume Analyzer — PlacementPilot AI" }] }),
