@@ -198,13 +198,43 @@ export const checkEligibility = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: EligibilitySchema }),
-      system:
-        "You are an expert on Indian campus placements. Use realistic data on top Indian recruiters (TCS, Infosys, Wipro, Cognizant, Capgemini, Accenture, Amazon, Microsoft, Google, Flipkart, Walmart, Zoho, Freshworks, Goldman Sachs, JPMC, Deloitte).",
-      prompt: `Given a final-year ${data.department} student with CGPA ${data.cgpa} and skills [${data.skills.join(", ")}], list 8 realistic companies that could recruit them, eligibility %, gaps and action items.`,
-    });
+    let companies: z.infer<typeof EligibilitySchema>["companies"] = [];
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You are an expert on Indian campus placements. Return only raw JSON. No markdown, no prose, no extra keys.",
+        prompt: `Given a final-year ${data.department} student with CGPA ${data.cgpa} and skills [${data.skills.join(", ")}], list 8 realistic companies (from top Indian recruiters such as TCS, Infosys, Wipro, Cognizant, Capgemini, Accenture, Amazon, Microsoft, Google, Flipkart, Walmart, Zoho, Freshworks, Goldman Sachs, JPMC, Deloitte) that could recruit them.
+
+Return EXACTLY this JSON shape and nothing else:
+{
+  "companies": [
+    {
+      "name": "TCS",
+      "role": "Systems Engineer",
+      "package_lpa": "3.5 LPA",
+      "eligibility_percent": 85,
+      "matched": ["Java", "SQL"],
+      "gaps": ["Cloud"],
+      "action": "Practice aptitude and SQL queries"
+    }
+  ]
+}
+
+Rules:
+- eligibility_percent: integer 0-100, no % sign.
+- matched, gaps: arrays of short skill strings.
+- Always include all keys for every company.
+- Return valid JSON only.`,
+      });
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      const parsed = EligibilitySchema.safeParse(extractJson(text));
+      if (parsed.success) companies = parsed.data.companies;
+      else throw new Error("AI response did not match eligibility schema");
+    } catch (error) {
+      console.error("Eligibility AI failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("eligibility_checks")
@@ -213,7 +243,7 @@ export const checkEligibility = createServerFn({ method: "POST" })
         cgpa: data.cgpa,
         department: data.department,
         skills: data.skills,
-        results: output.companies,
+        results: companies,
       })
       .select()
       .single();
@@ -246,12 +276,41 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: InterviewSchema }),
-      system: "You are an interview coach creating high-quality, realistic interview questions for campus placements.",
-      prompt: `Generate ${data.count} ${data.type} interview questions for a ${data.role} role. Each must include an ideal answer (3-5 sentences) and 2-3 tips.`,
-    });
+    let questions: z.infer<typeof InterviewSchema>["questions"] = [];
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You are an interview coach for Indian campus placements. Return only raw JSON. No markdown, no prose, no extra keys.",
+        prompt: `Generate ${data.count} ${data.type} interview questions for a ${data.role} role.
+
+Return EXACTLY this JSON shape and nothing else:
+{
+  "questions": [
+    {
+      "question": "What is OOP?",
+      "category": "Core CS",
+      "difficulty": "easy",
+      "ideal_answer": "A 3-5 sentence ideal answer.",
+      "tips": ["tip 1", "tip 2"]
+    }
+  ]
+}
+
+Rules:
+- difficulty must be exactly one of: "easy", "medium", "hard".
+- tips: array of 2-3 short strings.
+- Always include every key for every question.
+- Return valid JSON only.`,
+      });
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      const parsed = InterviewSchema.safeParse(extractJson(text));
+      if (parsed.success) questions = parsed.data.questions;
+      else throw new Error("AI response did not match interview schema");
+    } catch (error) {
+      console.error("Interview AI failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("interview_sessions")
@@ -259,13 +318,14 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
         user_id: context.userId,
         session_type: data.type,
         role: data.role,
-        questions: output.questions,
+        questions,
       })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return row;
   });
+
 
 /* ---------- EVALUATE MOCK INTERVIEW ANSWER ---------- */
 const EvalSchema = z.object({
@@ -319,16 +379,47 @@ export const generateRoadmap = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: RoadmapSchema }),
-      system: "You create realistic day-by-day placement prep plans for Indian engineering students.",
-      prompt: `Goal: ${data.goal}
+    let plan: z.infer<typeof RoadmapSchema> = { overview: "", days: [] };
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You create realistic day-by-day placement prep plans for Indian engineering students. Return only raw JSON. No markdown, no prose, no extra keys.",
+        prompt: `Goal: ${data.goal}
 Duration: ${data.durationDays} days
 Current skills: ${data.currentSkills.join(", ") || "beginner"}
 
-Build a day-by-day plan covering DSA, system design (if relevant), aptitude, communication, projects, and mock interviews. Each day: theme, 3-5 concrete tasks, 2-3 resources, hours required.`,
-    });
+Build a ${data.durationDays}-day plan covering DSA, system design (if relevant), aptitude, communication, projects, and mock interviews.
+
+Return EXACTLY this JSON shape and nothing else:
+{
+  "overview": "Short 2-3 sentence summary of the plan.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "DSA basics",
+      "tasks": ["Learn arrays", "Solve 5 easy problems"],
+      "resources": ["NeetCode", "GFG"],
+      "time_hours": 3
+    }
+  ]
+}
+
+Rules:
+- "days" must have exactly ${data.durationDays} entries, day 1..${data.durationDays}.
+- day and time_hours are raw numbers (no units, no quotes).
+- tasks (3-5) and resources (2-3) are arrays of short strings.
+- Always include every key for every day.
+- Return valid JSON only.`,
+      });
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      const parsed = RoadmapSchema.safeParse(extractJson(text));
+      if (parsed.success) plan = parsed.data;
+      else throw new Error("AI response did not match roadmap schema");
+    } catch (error) {
+      console.error("Roadmap AI failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("roadmaps")
@@ -336,13 +427,14 @@ Build a day-by-day plan covering DSA, system design (if relevant), aptitude, com
         user_id: context.userId,
         goal: data.goal,
         duration_days: data.durationDays,
-        plan: output,
+        plan,
       })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return row;
   });
+
 
 /* ---------- CHAT (non-streaming, simple) ---------- */
 export const chatAssistant = createServerFn({ method: "POST" })
