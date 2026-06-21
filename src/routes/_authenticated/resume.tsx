@@ -77,7 +77,7 @@ function ResumePage() {
           </div>
           <label className="glass flex cursor-pointer items-center justify-center gap-3 rounded-xl border border-dashed border-border py-8 text-sm text-muted-foreground hover:bg-accent/10">
             <Upload className="h-4 w-4" />
-            <span>{fileName !== "My Resume" ? fileName : "Click to upload .txt / drop here"}</span>
+            <span>{fileName !== "My Resume" ? fileName : "Click to upload PDF / DOCX / TXT"}</span>
             <input type="file" accept=".txt,.pdf,.docx" className="hidden" onChange={onFile} />
           </label>
           <Textarea
