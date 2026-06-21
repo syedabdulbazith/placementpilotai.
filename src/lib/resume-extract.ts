@@ -8,7 +8,6 @@ const INVALID_MSG = "Please upload a valid resume PDF or DOCX.";
 
 async function extractPdf(file: File): Promise<string> {
   const pdfjs = await import("pdfjs-dist");
-  // @ts-expect-error - vite-friendly worker URL import
   const workerUrl = (await import("pdfjs-dist/build/pdf.worker.mjs?url")).default;
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -18,12 +17,16 @@ async function extractPdf(file: File): Promise<string> {
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
     const content = await page.getTextContent();
-    text += content.items.map((it: { str?: string }) => it.str ?? "").join(" ") + "\n";
+    text +=
+      content.items
+        .map((it) => ("str" in it ? it.str : ""))
+        .join(" ") + "\n";
   }
   return text;
 }
 
 async function extractDocx(file: File): Promise<string> {
+  // @ts-expect-error - no bundled types for the browser entry
   const mammoth = await import("mammoth/mammoth.browser");
   const buf = await file.arrayBuffer();
   const { value } = await mammoth.extractRawText({ arrayBuffer: buf });
