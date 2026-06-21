@@ -127,15 +127,18 @@ ${data.text.slice(0, 12000)}
 
 /* ---------- SKILL GAP ---------- */
 const SkillGapSchema = z.object({
-  match_percent: z.number(),
-  matched_skills: z.array(z.string()),
-  missing_skills: z.array(
-    z.object({ skill: z.string(), priority: z.enum(["high", "medium", "low"]), reason: z.string() }),
-  ),
-  recommendations: z.array(
-    z.object({ topic: z.string(), resource: z.string(), duration_weeks: z.number() }),
-  ),
+  matchedSkills: z.array(z.string()),
+  missingSkills: z.array(z.string()),
+  recommendations: z.array(z.string()),
+  overallScore: z.coerce.number().catch(0),
 });
+
+const fallbackSkillGap = {
+  matchedSkills: [] as string[],
+  missingSkills: [] as string[],
+  recommendations: [] as string[],
+  overallScore: 0,
+};
 
 export const analyzeSkillGap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -145,15 +148,51 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: SkillGapSchema }),
-      system: "You are a senior career coach for engineering placements in India.",
-      prompt: `Target role: ${data.targetRole}
+    let analysis = fallbackSkillGap;
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You are a senior career coach for engineering placements in India. Return only raw JSON. No markdown, no prose, no extra keys.",
+        prompt: `Target role: ${data.targetRole}
 Current skills: ${data.currentSkills.join(", ") || "(none provided)"}
 
-Compare against the typical industry requirements for this role. Output JSON.`,
-    });
+Compare the candidate's skills to typical industry requirements for this role.
+
+Return EXACTLY this JSON shape and nothing else:
+{
+  "matchedSkills": ["JavaScript", "React", "SQL"],
+  "missingSkills": ["Node.js", "System Design", "Docker"],
+  "recommendations": [
+    "Learn Node.js fundamentals",
+    "Practice System Design",
+    "Build Docker-based projects"
+  ],
+  "overallScore": 75
+}
+
+Rules:
+- overallScore: integer 0-100, no % sign.
+- matchedSkills, missingSkills, recommendations: arrays of concise strings.
+- Always include every key.
+- Return valid JSON only.`,
+      });
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      const parsed = SkillGapSchema.safeParse(extractJson(text));
+      if (parsed.success) {
+        analysis = {
+          matchedSkills: parsed.data.matchedSkills,
+          missingSkills: parsed.data.missingSkills,
+          recommendations: parsed.data.recommendations,
+          overallScore: Math.max(0, Math.min(100, Math.round(parsed.data.overallScore))),
+        };
+      } else {
+        throw new Error("AI response did not match skill-gap schema");
+      }
+    } catch (error) {
+      console.error("Skill gap AI failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("skill_assessments")
@@ -161,15 +200,16 @@ Compare against the typical industry requirements for this role. Output JSON.`,
         user_id: context.userId,
         target_role: data.targetRole,
         current_skills: data.currentSkills,
-        missing_skills: output.missing_skills,
-        recommendations: output.recommendations,
-        match_percent: output.match_percent,
+        missing_skills: analysis.missingSkills,
+        recommendations: analysis.recommendations,
+        match_percent: analysis.overallScore,
       })
       .select()
       .single();
     if (error) throw new Error(error.message);
-    return { ...row, matched_skills: output.matched_skills };
+    return { ...row, ...analysis };
   });
+
 
 /* ---------- ELIGIBILITY ---------- */
 const EligibilitySchema = z.object({

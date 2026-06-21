@@ -52,46 +52,56 @@ function SkillsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm text-muted-foreground">Match for {role}</h3>
-                <div className="font-display text-4xl font-bold">{result.match_percent}<span className="text-base text-muted-foreground">%</span></div>
+                <div className="font-display text-4xl font-bold">{result.overallScore ?? 0}<span className="text-base text-muted-foreground">%</span></div>
               </div>
               <Target className="h-10 w-10 text-accent" />
             </div>
-            <Progress className="mt-4" value={result.match_percent ?? 0} />
+            <Progress className="mt-4" value={result.overallScore ?? 0} />
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
             <div className="glass rounded-2xl p-6">
-              <h3 className="mb-4 font-semibold">Missing skills</h3>
-              <div className="space-y-3">
-                {(result.missing_skills as { skill: string; priority: string; reason: string }[]).map((s) => (
-                  <div key={s.skill} className="glass rounded-xl p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{s.skill}</span>
-                      <Badge variant={s.priority === "high" ? "destructive" : s.priority === "medium" ? "default" : "secondary"}>{s.priority}</Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{s.reason}</p>
-                  </div>
+              <h3 className="mb-4 font-semibold">Matched skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {(result.matchedSkills ?? []).map((s: string) => (
+                  <Badge key={s} variant="secondary">{s}</Badge>
                 ))}
+                {(!result.matchedSkills || result.matchedSkills.length === 0) && (
+                  <p className="text-sm text-muted-foreground">No matched skills detected.</p>
+                )}
+              </div>
+
+              <h3 className="mb-4 mt-6 font-semibold">Missing skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {(result.missingSkills ?? []).map((s: string) => (
+                  <Badge key={s} variant="destructive">{s}</Badge>
+                ))}
+                {(!result.missingSkills || result.missingSkills.length === 0) && (
+                  <p className="text-sm text-muted-foreground">No gaps found — great work!</p>
+                )}
               </div>
             </div>
 
             <div className="glass rounded-2xl p-6">
               <h3 className="mb-4 font-semibold">Recommended learning path</h3>
               <ol className="space-y-3">
-                {(result.recommendations as { topic: string; resource: string; duration_weeks: number }[]).map((r, i) => (
+                {(result.recommendations ?? []).map((r: string, i: number) => (
                   <li key={i} className="glass flex items-start gap-3 rounded-xl p-4">
                     <div className="bg-gradient-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold text-primary-foreground">{i + 1}</div>
                     <div>
-                      <div className="font-medium">{r.topic}</div>
-                      <div className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><BookOpen className="h-3 w-3" />{r.resource} · ~{r.duration_weeks} wk</div>
+                      <div className="inline-flex items-center gap-1.5 text-sm"><BookOpen className="h-3 w-3" />{r}</div>
                     </div>
                   </li>
                 ))}
+                {(!result.recommendations || result.recommendations.length === 0) && (
+                  <p className="text-sm text-muted-foreground">We couldn't generate recommendations this time. Please try again.</p>
+                )}
               </ol>
             </div>
           </div>
         </>
       )}
+
     </div>
   );
 }
