@@ -206,7 +206,7 @@ Rules:
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) { console.error(error); throw new Error("Could not save results. Please try again."); }
     return { ...row, ...analysis };
   });
 
@@ -287,7 +287,7 @@ Rules:
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) { console.error(error); throw new Error("Could not save results. Please try again."); }
     return row;
   });
 
@@ -362,7 +362,7 @@ Rules:
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) { console.error(error); throw new Error("Could not save results. Please try again."); }
     return row;
   });
 
@@ -471,7 +471,7 @@ Rules:
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) { console.error(error); throw new Error("Could not save results. Please try again."); }
     return row;
   });
 
@@ -514,7 +514,9 @@ export const chatAssistant = createServerFn({ method: "POST" })
     });
 
     const messages = [
-      ...(history ?? []).map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ...(history ?? [])
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
       { role: "user" as const, content: data.message },
     ];
 
