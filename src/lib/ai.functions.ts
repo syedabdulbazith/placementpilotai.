@@ -18,6 +18,7 @@ const ResumeAnalysisSchema = z.object({
   strengths: z.array(z.string()),
   weaknesses: z.array(z.string()),
   suggestions: z.array(z.string()),
+  missingKeywords: z.array(z.string()).catch([]),
 });
 
 const fallbackResumeAnalysis = {
@@ -25,6 +26,7 @@ const fallbackResumeAnalysis = {
   strengths: [] as string[],
   weaknesses: [] as string[],
   suggestions: [] as string[],
+  missingKeywords: [] as string[],
 };
 
 function extractJson(raw: string) {
@@ -54,6 +56,7 @@ function normalizeResumeAnalysis(raw: unknown) {
     strengths: parsed.data.strengths,
     weaknesses: parsed.data.weaknesses,
     suggestions: parsed.data.suggestions,
+    missingKeywords: parsed.data.missingKeywords ?? [],
   };
 }
 
