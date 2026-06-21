@@ -44,7 +44,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="glass max-w-md rounded-2xl p-10 text-center shadow-elegant">
         <h1 className="text-xl font-semibold">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">An unexpected error occurred. Please try again.</p>
         <button
           onClick={() => {
             router.invalidate();
