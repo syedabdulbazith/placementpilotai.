@@ -379,16 +379,47 @@ export const generateRoadmap = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { output } = await generateText({
-      model: gw(),
-      output: Output.object({ schema: RoadmapSchema }),
-      system: "You create realistic day-by-day placement prep plans for Indian engineering students.",
-      prompt: `Goal: ${data.goal}
+    let plan: z.infer<typeof RoadmapSchema> = { overview: "", days: [] };
+
+    try {
+      const { text, finishReason } = await generateText({
+        model: gw(),
+        system:
+          "You create realistic day-by-day placement prep plans for Indian engineering students. Return only raw JSON. No markdown, no prose, no extra keys.",
+        prompt: `Goal: ${data.goal}
 Duration: ${data.durationDays} days
 Current skills: ${data.currentSkills.join(", ") || "beginner"}
 
-Build a day-by-day plan covering DSA, system design (if relevant), aptitude, communication, projects, and mock interviews. Each day: theme, 3-5 concrete tasks, 2-3 resources, hours required.`,
-    });
+Build a ${data.durationDays}-day plan covering DSA, system design (if relevant), aptitude, communication, projects, and mock interviews.
+
+Return EXACTLY this JSON shape and nothing else:
+{
+  "overview": "Short 2-3 sentence summary of the plan.",
+  "days": [
+    {
+      "day": 1,
+      "theme": "DSA basics",
+      "tasks": ["Learn arrays", "Solve 5 easy problems"],
+      "resources": ["NeetCode", "GFG"],
+      "time_hours": 3
+    }
+  ]
+}
+
+Rules:
+- "days" must have exactly ${data.durationDays} entries, day 1..${data.durationDays}.
+- day and time_hours are raw numbers (no units, no quotes).
+- tasks (3-5) and resources (2-3) are arrays of short strings.
+- Always include every key for every day.
+- Return valid JSON only.`,
+      });
+      if (finishReason === "length") throw new Error("AI response was truncated");
+      const parsed = RoadmapSchema.safeParse(extractJson(text));
+      if (parsed.success) plan = parsed.data;
+      else throw new Error("AI response did not match roadmap schema");
+    } catch (error) {
+      console.error("Roadmap AI failed", error);
+    }
 
     const { data: row, error } = await context.supabase
       .from("roadmaps")
@@ -396,13 +427,14 @@ Build a day-by-day plan covering DSA, system design (if relevant), aptitude, com
         user_id: context.userId,
         goal: data.goal,
         duration_days: data.durationDays,
-        plan: output,
+        plan,
       })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return row;
   });
+
 
 /* ---------- CHAT (non-streaming, simple) ---------- */
 export const chatAssistant = createServerFn({ method: "POST" })
