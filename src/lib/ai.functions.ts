@@ -78,12 +78,14 @@ export const analyzeResume = createServerFn({ method: "POST" })
   "score": 0,
   "strengths": [],
   "weaknesses": [],
-  "suggestions": []
+  "suggestions": [],
+  "missingKeywords": []
 }
 
 Rules:
-- score must be a raw number from 0 to 100, with no percent sign and no separators.
-- strengths, weaknesses, and suggestions must be arrays of concise strings.
+- score must be a raw number from 0 to 100 representing ATS compatibility, with no percent sign and no separators.
+- strengths, weaknesses, suggestions: arrays of concise strings.
+- missingKeywords: array of important keywords/skills the resume is missing for typical software/engineering roles (e.g. "Docker", "REST API", "Unit testing").
 - Return valid JSON only.
 
 Resume text:
@@ -108,7 +110,7 @@ ${data.text.slice(0, 12000)}
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
         suggestions: analysis.suggestions,
-        detected_skills: [],
+        detected_skills: analysis.missingKeywords,
         summary:
           analysis.score === 0
             ? "The AI analysis could not be completed safely, so we saved a fallback result instead of crashing."
