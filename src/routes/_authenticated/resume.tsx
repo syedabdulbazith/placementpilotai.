@@ -120,7 +120,7 @@ function ResumePage() {
               <ListCard icon={Lightbulb} title="Improvement suggestions" tone="accent" items={latest.suggestions ?? []} />
               {latest.detected_skills?.length ? (
                 <div className="glass rounded-2xl p-5">
-                  <h4 className="mb-3 text-sm font-medium text-muted-foreground">Detected skills</h4>
+                  <h4 className="mb-3 text-sm font-medium text-muted-foreground">Missing keywords</h4>
                   <div className="flex flex-wrap gap-2">
                     {latest.detected_skills.map((s) => (
                       <span key={s} className="glass rounded-full px-3 py-1 text-xs">{s}</span>
