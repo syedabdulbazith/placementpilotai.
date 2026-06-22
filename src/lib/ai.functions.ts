@@ -63,7 +63,12 @@ function normalizeResumeAnalysis(raw: unknown) {
 export const analyzeResume = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ fileName: z.string(), text: z.string().min(20) }).parse(d),
+    z
+      .object({
+        fileName: z.string().min(1).max(255),
+        text: z.string().min(20).max(15000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     let analysis = fallbackResumeAnalysis;
@@ -178,7 +183,10 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
     z
-      .object({ targetRole: z.string().min(2), currentSkills: z.array(z.string()) })
+      .object({
+        targetRole: z.string().min(2).max(120),
+        currentSkills: z.array(z.string().max(100)).max(50),
+      })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -265,9 +273,9 @@ export const checkEligibility = createServerFn({ method: "POST" })
   .validator((d: unknown) =>
     z
       .object({
-        cgpa: z.number(),
-        department: z.string(),
-        skills: z.array(z.string()),
+        cgpa: z.number().min(0).max(10),
+        department: z.string().min(1).max(120),
+        skills: z.array(z.string().max(100)).max(50),
       })
       .parse(d),
   )
@@ -344,8 +352,8 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
     z
       .object({
         type: z.enum(["technical", "hr", "aptitude", "mock"]),
-        role: z.string().default("Software Engineer"),
-        count: z.number().default(8),
+        role: z.string().min(1).max(120).default("Software Engineer"),
+        count: z.number().int().min(1).max(20).default(8),
       })
       .parse(d),
   )
@@ -411,7 +419,13 @@ const EvalSchema = z.object({
 export const evaluateAnswer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ question: z.string(), answer: z.string(), idealAnswer: z.string().optional() }).parse(d),
+    z
+      .object({
+        question: z.string().min(1).max(2000),
+        answer: z.string().min(1).max(5000),
+        idealAnswer: z.string().max(5000).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { output } = await generateText({
@@ -446,9 +460,9 @@ export const generateRoadmap = createServerFn({ method: "POST" })
   .validator((d: unknown) =>
     z
       .object({
-        goal: z.string().min(2),
+        goal: z.string().min(2).max(200),
         durationDays: z.union([z.literal(15), z.literal(30), z.literal(60)]),
-        currentSkills: z.array(z.string()).default([]),
+        currentSkills: z.array(z.string().max(100)).max(50).default([]),
       })
       .parse(d),
   )
