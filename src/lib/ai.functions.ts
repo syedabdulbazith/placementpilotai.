@@ -119,15 +119,44 @@ ${data.text.slice(0, 12000)}
       })
       .select()
       .single();
-    if (error) throw new Error("We couldn't save the analysis. Please try again.");
 
-    // Update readiness score (rolling avg with resume)
-    await context.supabase
-      .from("profiles")
-      .update({ readiness_score: analysis.score })
-      .eq("id", context.userId);
+    if (error) {
+      console.error("Failed to save resume analysis", error);
+      return {
+        id: null,
+        user_id: context.userId,
+        file_name: data.fileName,
+        overall_score: analysis.score,
+        ats_score: analysis.score,
+        strengths: analysis.strengths,
+        weaknesses: analysis.weaknesses,
+        suggestions: analysis.suggestions,
+        detected_skills: analysis.missingKeywords,
+        summary:
+          "We analyzed your resume but couldn't save the result. You can still view it below.",
+        created_at: new Date().toISOString(),
+        atsScore: analysis.score,
+        missingKeywords: analysis.missingKeywords,
+        analysis,
+      };
+    }
 
-    return row;
+    // Best-effort readiness update — never fail the request if this errors.
+    try {
+      await context.supabase
+        .from("profiles")
+        .update({ readiness_score: analysis.score })
+        .eq("id", context.userId);
+    } catch (e) {
+      console.error("Failed to update readiness score", e);
+    }
+
+    return {
+      ...row,
+      atsScore: analysis.score,
+      missingKeywords: analysis.missingKeywords,
+      analysis,
+    };
   });
 
 /* ---------- SKILL GAP ---------- */
