@@ -273,9 +273,9 @@ export const checkEligibility = createServerFn({ method: "POST" })
   .validator((d: unknown) =>
     z
       .object({
-        cgpa: z.number(),
-        department: z.string(),
-        skills: z.array(z.string()),
+        cgpa: z.number().min(0).max(10),
+        department: z.string().min(1).max(120),
+        skills: z.array(z.string().max(100)).max(50),
       })
       .parse(d),
   )
