@@ -460,9 +460,9 @@ export const generateRoadmap = createServerFn({ method: "POST" })
   .validator((d: unknown) =>
     z
       .object({
-        goal: z.string().min(2),
+        goal: z.string().min(2).max(200),
         durationDays: z.union([z.literal(15), z.literal(30), z.literal(60)]),
-        currentSkills: z.array(z.string()).default([]),
+        currentSkills: z.array(z.string().max(100)).max(50).default([]),
       })
       .parse(d),
   )
