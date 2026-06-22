@@ -37,27 +37,45 @@ function AuthPage() {
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return toast.error(error.message);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    // Ensure session is fully persisted before navigating
+    if (data.session) {
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+    }
     toast.success("Welcome back!");
-    navigate({ to: "/dashboard" });
+    // Full navigation to guarantee fresh auth state on the dashboard
+    window.location.assign("/dashboard");
   }
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: {
         emailRedirectTo: window.location.origin,
         data: { full_name: name },
       },
     });
-    setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    if (data.session) {
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+    }
     toast.success("Account created! Redirecting…");
-    navigate({ to: "/dashboard" });
+    window.location.assign("/dashboard");
   }
 
   async function handleForgot(e: React.FormEvent) {
@@ -76,7 +94,7 @@ function AuthPage() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
     if (r.error) { setLoading(false); toast.error(r.error.message); return; }
     if (r.redirected) return;
-    navigate({ to: "/dashboard" });
+    window.location.assign("/dashboard");
   }
 
   return (
