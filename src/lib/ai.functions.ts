@@ -419,7 +419,13 @@ const EvalSchema = z.object({
 export const evaluateAnswer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ question: z.string(), answer: z.string(), idealAnswer: z.string().optional() }).parse(d),
+    z
+      .object({
+        question: z.string().min(1).max(2000),
+        answer: z.string().min(1).max(5000),
+        idealAnswer: z.string().max(5000).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data }) => {
     const { output } = await generateText({
