@@ -38,15 +38,32 @@ function ResumePage() {
   const m = useMutation({
     mutationFn: async () => analyzeFn({ data: { fileName, text } }),
     onSuccess: (result) => {
+      if (!result) {
+        toast.error("We couldn't analyze your resume. Please try again.");
+        return;
+      }
       if (result.summary?.includes("could not be completed")) {
-        toast.warning("AI analysis could not be completed. A safe fallback result was saved.");
+        toast.warning("AI analysis returned a fallback result. Try again in a moment.");
+      } else if (result.summary?.includes("couldn't save")) {
+        toast.warning("Analysis ready, but we couldn't save it to your history.");
       } else {
         toast.success("Resume analyzed!");
       }
-      qc.invalidateQueries({ queryKey: ["resumes"] });
+      // If insert failed, surface the synthetic row immediately.
+      if (!result.id) {
+        qc.setQueryData(["resumes", user.id], (prev: unknown) => {
+          const list = Array.isArray(prev) ? prev : [];
+          return [result, ...list];
+        });
+      } else {
+        qc.invalidateQueries({ queryKey: ["resumes"] });
+      }
       qc.invalidateQueries({ queryKey: ["profile"] });
     },
-    onError: () => toast.error("We couldn't analyze your resume right now. Please try again."),
+    onError: (err) => {
+      console.error("Resume analyze failed", err);
+      toast.error("We couldn't analyze your resume right now. Please try again.");
+    },
   });
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
