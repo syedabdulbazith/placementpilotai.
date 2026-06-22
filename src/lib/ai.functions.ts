@@ -352,8 +352,8 @@ export const generateInterviewQuestions = createServerFn({ method: "POST" })
     z
       .object({
         type: z.enum(["technical", "hr", "aptitude", "mock"]),
-        role: z.string().default("Software Engineer"),
-        count: z.number().default(8),
+        role: z.string().min(1).max(120).default("Software Engineer"),
+        count: z.number().int().min(1).max(20).default(8),
       })
       .parse(d),
   )
