@@ -183,7 +183,10 @@ export const analyzeSkillGap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
     z
-      .object({ targetRole: z.string().min(2), currentSkills: z.array(z.string()) })
+      .object({
+        targetRole: z.string().min(2).max(120),
+        currentSkills: z.array(z.string().max(100)).max(50),
+      })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
