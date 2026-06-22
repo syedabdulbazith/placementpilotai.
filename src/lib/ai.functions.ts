@@ -63,7 +63,12 @@ function normalizeResumeAnalysis(raw: unknown) {
 export const analyzeResume = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
-    z.object({ fileName: z.string(), text: z.string().min(20) }).parse(d),
+    z
+      .object({
+        fileName: z.string().min(1).max(255),
+        text: z.string().min(20).max(15000),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     let analysis = fallbackResumeAnalysis;
