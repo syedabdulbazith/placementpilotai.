@@ -144,6 +144,7 @@ ${data.text.slice(0, 12000)}
         .single();
 
       if (error) throw error;
+      if (!savedRow) throw new Error("Resume history save returned no row");
       row = savedRow;
     } catch (error) {
       const saveError = databaseErrorDetails(error);

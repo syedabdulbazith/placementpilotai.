@@ -49,7 +49,7 @@ function ResumePage() {
       if (result.summary?.includes("could not be completed")) {
         toast.warning("AI analysis returned a fallback result. Try again in a moment.");
       } else if (result.summary?.includes("couldn't save")) {
-        console.error("Resume history save failed", result.saveError ?? result);
+        console.error("Resume history save failed", "saveError" in result ? result.saveError : result);
         toast.warning("Analysis ready, but we couldn't save it to your history.");
       } else {
         toast.success("Resume analyzed!");
