@@ -28,7 +28,11 @@ function ResumePage() {
   const { data: history } = useQuery({
     queryKey: ["resumes", user.id],
     queryFn: async () => {
-      const { data } = await supabase.from("resume_analyses").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
+      const { data, error } = await supabase.from("resume_analyses").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
+      if (error) {
+        console.error("Resume history load failed", error);
+        throw error;
+      }
       return data ?? [];
     },
   });
@@ -45,6 +49,7 @@ function ResumePage() {
       if (result.summary?.includes("could not be completed")) {
         toast.warning("AI analysis returned a fallback result. Try again in a moment.");
       } else if (result.summary?.includes("couldn't save")) {
+        console.error("Resume history save failed", "saveError" in result ? result.saveError : result);
         toast.warning("Analysis ready, but we couldn't save it to your history.");
       } else {
         toast.success("Resume analyzed!");
