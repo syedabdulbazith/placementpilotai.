@@ -60,6 +60,21 @@ function normalizeResumeAnalysis(raw: unknown) {
   };
 }
 
+function databaseErrorDetails(error: unknown) {
+  if (error && typeof error === "object") {
+    const err = error as { message?: unknown; code?: unknown; details?: unknown; hint?: unknown; name?: unknown };
+    return {
+      name: typeof err.name === "string" ? err.name : undefined,
+      message: typeof err.message === "string" ? err.message : String(error),
+      code: typeof err.code === "string" ? err.code : undefined,
+      details: typeof err.details === "string" ? err.details : undefined,
+      hint: typeof err.hint === "string" ? err.hint : undefined,
+    };
+  }
+
+  return { message: String(error) };
+}
+
 export const analyzeResume = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) =>
@@ -105,28 +120,38 @@ ${data.text.slice(0, 12000)}
       console.error("Resume AI analysis failed", error);
     }
 
-    const { data: row, error } = await context.supabase
-      .from("resume_analyses")
-      .insert({
-        user_id: context.userId,
-        file_name: data.fileName,
-        overall_score: analysis.score,
-        ats_score: analysis.score,
-        strengths: analysis.strengths,
-        weaknesses: analysis.weaknesses,
-        suggestions: analysis.suggestions,
-        detected_skills: analysis.missingKeywords,
-        summary:
-          analysis.score === 0
-            ? "The AI analysis could not be completed safely, so we saved a fallback result instead of crashing."
-            : "AI resume analysis completed successfully.",
-        raw_text: data.text.slice(0, 20000),
-      })
-      .select()
-      .single();
+    let row = null;
 
-    if (error) {
-      console.error("Failed to save resume analysis", error);
+    try {
+      const { data: savedRow, error } = await context.supabase
+        .from("resume_analyses")
+        .insert({
+          user_id: context.userId,
+          file_name: data.fileName,
+          overall_score: analysis.score,
+          ats_score: analysis.score,
+          strengths: analysis.strengths,
+          weaknesses: analysis.weaknesses,
+          suggestions: analysis.suggestions,
+          detected_skills: analysis.missingKeywords,
+          summary:
+            analysis.score === 0
+              ? "The AI analysis could not be completed safely, so we saved a fallback result instead of crashing."
+              : "AI resume analysis completed successfully.",
+          raw_text: data.text.slice(0, 20000),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      row = savedRow;
+    } catch (error) {
+      const saveError = databaseErrorDetails(error);
+      console.error("Resume history save failed", {
+        ...saveError,
+        userId: context.userId,
+        fileName: data.fileName,
+      });
       return {
         id: null,
         user_id: context.userId,
@@ -143,6 +168,7 @@ ${data.text.slice(0, 12000)}
         atsScore: analysis.score,
         missingKeywords: analysis.missingKeywords,
         analysis,
+        saveError,
       };
     }
 
