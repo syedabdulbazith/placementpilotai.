@@ -171,14 +171,6 @@ ${data.text.slice(0, 12000)}
         analysis,
         saveError: { message: "Database save failed" },
       };
-        summary:
-          "We analyzed your resume but couldn't save the result. You can still view it below.",
-        created_at: new Date().toISOString(),
-        atsScore: analysis.score,
-        missingKeywords: analysis.missingKeywords,
-        analysis,
-        saveError,
-      };
     }
 
     // Best-effort readiness update — never fail the request if this errors.
