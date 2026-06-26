@@ -169,6 +169,14 @@ ${data.text.slice(0, 12000)}
         atsScore: analysis.score,
         missingKeywords: analysis.missingKeywords,
         analysis,
+        saveError: { message: "Database save failed" },
+      };
+        summary:
+          "We analyzed your resume but couldn't save the result. You can still view it below.",
+        created_at: new Date().toISOString(),
+        atsScore: analysis.score,
+        missingKeywords: analysis.missingKeywords,
+        analysis,
         saveError,
       };
     }
