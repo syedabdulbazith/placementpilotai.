@@ -169,7 +169,7 @@ ${data.text.slice(0, 12000)}
         atsScore: analysis.score,
         missingKeywords: analysis.missingKeywords,
         analysis,
-        saveError,
+        saveError: { message: "Database save failed" },
       };
     }
 
