@@ -29,6 +29,26 @@ const fallbackResumeAnalysis = {
   missingKeywords: [] as string[],
 };
 
+/**
+ * Sanitize untrusted user input before embedding into an LLM prompt.
+ * - Removes occurrences of our delimiter tags so a user can't close them early.
+ * - Neutralizes common prompt-injection phrasing by zero-width-splitting trigger words.
+ * The result is still meant to be wrapped in an XML-style tag in the prompt.
+ */
+function sanitizeForPrompt(input: string, maxLen = 15000): string {
+  let s = String(input ?? "").slice(0, maxLen);
+  // Strip any tag that looks like one of our delimiters to prevent tag-escape.
+  s = s.replace(/<\/?(?:user_[a-z_]+|system|assistant|instructions?)>/gi, "");
+  // Break common jailbreak triggers so the model treats them as data, not commands.
+  s = s.replace(
+    /\b(ignore|disregard|override|forget)\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|prompts?|rules?)\b/gi,
+    "[filtered]",
+  );
+  s = s.replace(/\b(system\s*prompt|developer\s*message)\b/gi, "[filtered]");
+  return s;
+}
+
+
 function extractJson(raw: string) {
   let cleaned = raw
     .replace(/^```json\s*/im, "")
