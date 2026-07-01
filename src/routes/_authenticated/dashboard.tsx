@@ -165,16 +165,17 @@ function Dashboard() {
             { to: "/interview", icon: BrainCircuit, title: "Mock Interview", desc: "Practice with AI" },
             { to: "/roadmap", icon: MapIcon, title: "Build a Roadmap", desc: "15 / 30 / 60-day plan" },
           ].map((a) => (
-            <Link key={a.to} to={a.to} className="glass group rounded-2xl p-5 transition-all hover:shadow-glow">
+            <Link key={a.to} to={a.to} className="glass hover-lift group flex h-full flex-col rounded-2xl p-6">
               <div className="flex items-start justify-between">
-                <div className="bg-gradient-primary flex h-10 w-10 items-center justify-center rounded-lg shadow-glow">
-                  <a.icon className="h-4 w-4 text-primary-foreground" />
+                <div className="bg-gradient-primary flex h-11 w-11 items-center justify-center rounded-xl shadow-glow">
+                  <a.icon className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
               </div>
-              <div className="mt-3 font-semibold">{a.title}</div>
-              <div className="text-sm text-muted-foreground">{a.desc}</div>
+              <div className="mt-4 font-display text-lg font-semibold">{a.title}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{a.desc}</div>
             </Link>
+
           ))}
         </div>
       </div>
