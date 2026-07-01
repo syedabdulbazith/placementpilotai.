@@ -87,9 +87,15 @@ function ResumePage() {
     toast.success("Resume loaded. Click Analyze with AI.");
   }
 
+  const currentStep = m.isPending ? 1 : latest ? 5 : text.length >= 50 ? 1 : 0;
+
   return (
     <div className="space-y-6">
       <PageHeader title="AI Resume Analyzer" description="Get an ATS score, strengths, weaknesses, and tailored improvements." />
+
+      <ResumeStepper current={currentStep} />
+
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="glass-strong space-y-4 rounded-2xl p-6">
@@ -191,3 +197,27 @@ function ListCard({ icon: Icon, title, items, tone }: { icon: React.ComponentTyp
     </div>
   );
 }
+
+function ResumeStepper({ current }: { current: number }) {
+  const steps = ["Upload Resume", "AI Analysis", "ATS Score", "Skill Gap", "Recommendations", "Career Roadmap"];
+  return (
+    <div className="glass rounded-2xl p-4 md:p-5">
+      <div className="flex items-center gap-2 overflow-x-auto">
+        {steps.map((s, i) => {
+          const done = i < current;
+          const active = i === current;
+          return (
+            <div key={s} className="flex flex-1 items-center gap-2 min-w-0">
+              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all ${done ? "bg-success text-success-foreground" : active ? "bg-gradient-primary text-primary-foreground shadow-glow" : "glass text-muted-foreground"}`}>
+                {done ? "✓" : i + 1}
+              </div>
+              <div className={`truncate text-xs font-medium ${active ? "text-foreground" : "text-muted-foreground"}`}>{s}</div>
+              {i < steps.length - 1 && <div className={`hidden h-px flex-1 md:block ${done ? "bg-success/60" : "bg-border"}`} />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+

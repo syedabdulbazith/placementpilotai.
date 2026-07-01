@@ -116,10 +116,14 @@ function AppShell() {
             {open ? <X /> : <Menu />}
           </Button>
         </div>
-        <div className="flex-1 px-4 py-6 md:px-8 md:py-8">
+        <div className="flex-1 px-4 py-6 md:px-10 md:py-10">
           <Outlet />
         </div>
+        <footer className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground md:px-10">
+          PlacementPilot AI © 2026 <span className="mx-2 opacity-40">|</span> Powered by Enterprise Persona Intelligence
+        </footer>
       </main>
+
     </div>
   );
 }
