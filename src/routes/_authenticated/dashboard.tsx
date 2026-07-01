@@ -57,6 +57,12 @@ function Dashboard() {
       <PageHeader
         title={`Welcome back, ${profile?.full_name?.split(" ")[0] ?? "Student"} 👋`}
         description="Here's your placement preparation snapshot."
+        action={
+          <Link to="/copilot" className="glass inline-flex items-center gap-2 rounded-full border border-primary/30 px-3 py-1.5 text-xs font-medium text-foreground shadow-glow transition-all hover:border-primary/60">
+            <span className="bg-gradient-primary h-2 w-2 rounded-full" />
+            Powered by Enterprise Persona Intelligence
+          </Link>
+        }
       />
 
       <div className="grid gap-5 lg:grid-cols-3">
