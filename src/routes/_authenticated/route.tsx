@@ -28,6 +28,7 @@ const nav = [
   { to: "/chat", label: "AI Assistant", icon: MessageSquare },
   { to: "/interview", label: "Interview Prep", icon: BrainCircuit },
   { to: "/roadmap", label: "Roadmap", icon: MapIcon },
+  { to: "/copilot", label: "AI Career Copilot", icon: Bot },
 ] as const;
 
 function AppShell() {
