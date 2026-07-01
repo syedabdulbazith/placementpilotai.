@@ -87,9 +87,15 @@ function ResumePage() {
     toast.success("Resume loaded. Click Analyze with AI.");
   }
 
+  const currentStep = m.isPending ? 1 : latest ? 5 : text.length >= 50 ? 1 : 0;
+
   return (
     <div className="space-y-6">
       <PageHeader title="AI Resume Analyzer" description="Get an ATS score, strengths, weaknesses, and tailored improvements." />
+
+      <ResumeStepper current={currentStep} />
+
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="glass-strong space-y-4 rounded-2xl p-6">
