@@ -25,9 +25,9 @@ export function ReadinessGauge({ value, size = 160 }: { value: number; size?: nu
   );
 }
 
-export function StatCard({ title, value, icon: Icon, accent }: { title: string; value: string | number; icon: React.ComponentType<{ className?: string }>; accent?: string }) {
+export function StatCard({ title, value, icon: Icon, accent }: { title: string; value: React.ReactNode; icon: React.ComponentType<{ className?: string }>; accent?: string }) {
   return (
-    <div className="glass rounded-2xl p-5">
+    <div className="glass hover-lift rounded-2xl p-5">
       <div className="flex items-center justify-between">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">{title}</span>
         <div className={cn("bg-gradient-primary flex h-9 w-9 items-center justify-center rounded-lg shadow-glow", accent)}>
@@ -41,12 +41,13 @@ export function StatCard({ title, value, icon: Icon, accent }: { title: string; 
 
 export function PageHeader({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 text-muted-foreground">{description}</p>}
+        <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
+        {description && <p className="mt-2 text-muted-foreground">{description}</p>}
       </div>
       {action}
     </div>
   );
 }
+
