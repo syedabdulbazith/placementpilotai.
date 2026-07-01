@@ -55,20 +55,33 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={`Welcome back, ${profile?.full_name?.split(" ")[0] ?? "Student"} 👋`}
-        description="Here's your placement preparation snapshot."
-        action={
-          <Link to="/copilot" className="glass inline-flex items-center gap-2 rounded-full border border-primary/30 px-3 py-1.5 text-xs font-medium text-foreground shadow-glow transition-all hover:border-primary/60">
-            <span className="bg-gradient-primary h-2 w-2 rounded-full" />
-            Powered by Enterprise Persona Intelligence
-          </Link>
-        }
-      />
+      {/* Welcome banner */}
+      <div className="glass-strong relative overflow-hidden rounded-2xl p-6 md:p-8">
+        <div className="bg-gradient-primary pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-20 blur-3xl" />
+        <div className="bg-gradient-primary pointer-events-none absolute -bottom-32 -left-16 h-64 w-64 rounded-full opacity-10 blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <Link to="/copilot" className="glass hover-glow inline-flex items-center gap-2 rounded-full border border-primary/30 px-3 py-1.5 text-xs font-medium">
+              <CheckCircle2 className="h-3 w-3 text-success" />
+              Powered by Enterprise Persona Intelligence
+            </Link>
+            <h1 className="mt-4 font-display text-3xl font-bold tracking-tight md:text-4xl">
+              Welcome to <span className="gradient-text">PlacementPilot AI</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
+              Enterprise AI Career Copilot for Smart Placements — hey {profile?.full_name?.split(" ")[0] ?? "Student"}, here's your snapshot.
+            </p>
+          </div>
+          <div className="glass hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs md:inline-flex">
+            <ShieldCheck className="h-3.5 w-3.5 text-success" />
+            <span className="text-muted-foreground">Enterprise Ready</span>
+          </div>
+        </div>
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         {/* Readiness */}
-        <div className="glass-strong rounded-2xl p-6 lg:col-span-1">
+        <div className="glass-strong hover-lift rounded-2xl p-6 lg:col-span-1">
           <h3 className="text-sm font-medium text-muted-foreground">AI Placement Readiness</h3>
           <div className="mt-4 flex flex-col items-center">
             <ReadinessGauge value={score} />
@@ -79,7 +92,7 @@ function Dashboard() {
         </div>
 
         {/* Trend */}
-        <div className="glass rounded-2xl p-6 lg:col-span-2">
+        <div className="glass hover-lift rounded-2xl p-6 lg:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-muted-foreground">Readiness Trend</h3>
             <span className="inline-flex items-center gap-1 text-xs text-success"><TrendingUp className="h-3 w-3" />+12 this week</span>
@@ -105,11 +118,12 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Resumes analyzed" value={counts?.resumes ?? 0} icon={FileText} />
-        <StatCard title="Skill checks" value={counts?.skills ?? 0} icon={Target} />
-        <StatCard title="Mock interviews" value={counts?.interviews ?? 0} icon={BrainCircuit} />
-        <StatCard title="Active roadmaps" value={counts?.roadmaps ?? 0} icon={MapIcon} />
+        <StatCard title="Resumes Analyzed" value={<CountUp value={counts?.resumes ?? 0} />} icon={FileText} />
+        <StatCard title="ATS Reports Generated" value={<CountUp value={counts?.resumes ?? 0} />} icon={Sparkles} />
+        <StatCard title="Skill Gaps Identified" value={<CountUp value={counts?.skills ?? 0} />} icon={Target} />
+        <StatCard title="Mock Interviews Completed" value={<CountUp value={counts?.interviews ?? 0} />} icon={BrainCircuit} />
       </div>
+
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="glass rounded-2xl p-6 lg:col-span-2">
