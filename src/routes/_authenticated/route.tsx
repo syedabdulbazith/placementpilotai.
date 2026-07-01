@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard, FileText, Target, Building2, MessageSquare,
-  MapIcon, BrainCircuit, Shield, LogOut, Menu, X,
+  MapIcon, BrainCircuit, Shield, LogOut, Menu, X, Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
