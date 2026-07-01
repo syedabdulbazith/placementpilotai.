@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ReadinessGauge, StatCard, PageHeader } from "@/components/app/widgets";
-import { FileText, Target, Building2, MessageSquare, BrainCircuit, MapIcon, ArrowRight, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ReadinessGauge, StatCard } from "@/components/app/widgets";
+import { CountUp } from "@/components/app/count-up";
+import { FileText, Target, Building2, MessageSquare, BrainCircuit, MapIcon, ArrowRight, TrendingUp, Sparkles, CheckCircle2, ShieldCheck } from "lucide-react";
+
 import {
   Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
   RadarChart, PolarGrid, PolarAngleAxis, Radar, PolarRadiusAxis,
